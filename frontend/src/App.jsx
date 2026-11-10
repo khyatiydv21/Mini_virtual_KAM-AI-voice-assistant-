@@ -89,10 +89,11 @@ function App() {
     ];
 
     try {
+
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/chat`,
         {
-          method: 'POST',
+          method: 'POST', // VERY IMPORTANT
           headers: {
             'Content-Type': 'application/json',
           },
@@ -102,6 +103,33 @@ function App() {
           }),
         }
       );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.detail || `Backend error: ${response.status}`
+        );
+      }
+
+      if (!data.reply) {
+        throw new Error('Empty response from backend');
+      }
+
+      const reply = cleanText(data.reply);
+
+      setAssistantReply(reply);
+
+      historyRef.current = [
+        ...historyRef.current,
+        { role: 'assistant', content: reply }
+      ];
+
+      isProcessingRef.current = false;
+
+      if (shouldContinueRef.current) {
+        speakText(reply);
+      }
 
       const data = await response.json();
 
