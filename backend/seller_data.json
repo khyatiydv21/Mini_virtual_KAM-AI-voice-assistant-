@@ -1,0 +1,24 @@
+{
+    "seller_name": "Demo Seller",
+    "business_category": "Beauty and Personal Care",
+    "sales": {
+        "last_month": 200000,
+        "this_month": 135000
+    },
+    "orders": {
+        "last_month": 400,
+        "this_month": 270
+    },
+    "cancellation_rate": {
+        "last_month": 8,
+        "this_month": 14
+    },
+    "average_selling_price": {
+        "last_month": 500,
+        "this_month": 500
+    },
+    "out_of_stock_products": {
+        "last_month": 5,
+        "this_month": 18
+    }
+}
