@@ -73,7 +73,7 @@ function App() {
       console.log('Recognition start error:', error.message);
     }
   };
-  
+
   // Send the question and history to the backend.
   const getAIResponse = async (spokenText) => {
     isProcessingRef.current = true;
@@ -86,8 +86,7 @@ function App() {
     ];
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/chat', {
-        method: 'POST',
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/chat`, {
         headers: {
           'Content-Type': 'application/json',
         },
