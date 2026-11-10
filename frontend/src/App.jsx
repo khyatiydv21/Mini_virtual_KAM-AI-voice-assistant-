@@ -14,14 +14,17 @@ function App() {
   const isProcessingRef = useRef(false);
   const isSpeakingRef = useRef(false);
   const historyRef = useRef([]);
+
+  // Clean formatting from AI responses.
   const cleanText = (text) => {
-    return text
+    return String(text || '')
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
       .replace(/#{1,6}\s/g, '')
       .replace(/`/g, '')
       .trim();
   };
+
   // Speak the AI response.
   const speakText = (text) => {
     window.speechSynthesis.cancel();
@@ -86,33 +89,45 @@ function App() {
     ];
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/chat`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: spokenText,
-          history: historyRef.current,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Backend error: ${response.status}`);
-      }
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/chat`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: spokenText,
+            history: historyRef.current,
+          }),
+        }
+      );
 
       const data = await response.json();
 
-      setAssistantReply(data.reply);
+      if (!response.ok) {
+        throw new Error(
+          data.detail || `Backend error: ${response.status}`
+        );
+      }
+
+      if (typeof data.reply !== 'string' || !data.reply.trim()) {
+        throw new Error('The backend returned an empty response.');
+      }
+
+      const reply = cleanText(data.reply);
+
+      setAssistantReply(reply);
 
       historyRef.current = [
         ...historyRef.current,
-        { role: 'assistant', content: data.reply }
+        { role: 'assistant', content: reply }
       ];
 
       isProcessingRef.current = false;
 
       if (shouldContinueRef.current) {
-        speakText(data.reply);
+        speakText(reply);
       }
 
     } catch (error) {
@@ -136,7 +151,8 @@ function App() {
   // Start a new conversation.
   const startConversation = () => {
     const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert('Please use Google Chrome for speech recognition.');
@@ -183,6 +199,7 @@ function App() {
       ) {
         shouldContinueRef.current = false;
         setConversationStarted(false);
+        setListening(false);
         setAssistantReply('Please allow microphone permission.');
       }
     };
@@ -201,7 +218,7 @@ function App() {
       }
     };
 
-    // IMPORTANT: Start listening inside this function.
+    // Start listening.
     startRecognition();
   };
 
@@ -226,15 +243,19 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <h2>Snapdeal</h2>
-        <span>AI Virtual KAM</span>
+        <h2>Mini Virtual KAM</h2>
+        <span>AI Voice Assistant</span>
       </header>
 
       <main className="main">
         <div className="assistant-card">
           <div className="status">● AI ASSISTANT ONLINE</div>
 
-          <h1>Your Personal<br />AI Account Manager</h1>
+          <h1>
+            Your Personal
+            <br />
+            AI Account Manager
+          </h1>
 
           <p>
             Let's understand your business performance
